@@ -7,6 +7,14 @@ import CanvasLoader from "./Loader";
 // Function to detect if the device is mobile
 const isMobile = () => window.innerWidth <= 768;
 
+// Helper function to dynamically adjust the canvas size for mobile devices
+const getCanvasSize = () => {
+  if (window.innerWidth <= 768) {
+    return { width: window.innerWidth / 2, height: window.innerHeight / 2 };  // Reduce size for mobile
+  }
+  return { width: window.innerWidth, height: window.innerHeight };
+};
+
 const SF = ({ scale, position }) => {
   const SFRef = useRef();
   const { scene, animations } = useGLTF(SFScene);
@@ -64,6 +72,8 @@ const SFCanvas = () => {
       className="w-full h-screen bg-transparent z-10"
       shadows
       camera={{ position: [300, 175, -650], near: 0.1, far: 1000 }}
+      width={getCanvasSize().width} // Dynamically adjust width for mobile
+      height={getCanvasSize().height} // Dynamically adjust height for mobile
     >
       <Suspense fallback={<CanvasLoader />}>
         <ambientLight intensity={0.5} />
@@ -84,7 +94,7 @@ const SFCanvas = () => {
           maxPolarAngle={Math.PI / 2} 
           minPolarAngle={Math.PI / 2} 
           autoRotate 
-          autoRotateSpeed={1} 
+          autoRotateSpeed={isMobileDevice ? 0.5 : 1} // Adjust rotation speed for mobile
         />
         <Environment preset="night" />
       </Suspense>
