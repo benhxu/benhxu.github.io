@@ -1,8 +1,8 @@
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, useAnimations, useGLTF, Environment } from "@react-three/drei";
 import { Suspense, useEffect, useRef, useState } from "react";
-import SFScene from "../assets/3d/scene.glb"; // High-quality model
-import SFSceneMobile from "../assets/3d/scene-v1.glb"; // Mobile-optimized model
+import SFScene from "../assets/3d/scene-v1.glb"; // High-quality model
+import SceneMobile from "../assets/3d/sai.glb"; // Mobile-optimized model
 import CanvasLoader from "./Loader";
 
 const SF = ({ scale, position, glbFile }) => {
@@ -54,7 +54,7 @@ const SFCanvas = () => {
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth < 768) {
-        setGlbFile(SFSceneMobile); // Use mobile-optimized model
+        setGlbFile(SceneMobile); // Use mobile-optimized model
         setScale([0.2, 0.2, 0.2]);
         setPosition([0, -0.5, 0]);
       } else if (window.innerWidth < 1024) {
