@@ -2,7 +2,7 @@ import { Canvas } from "@react-three/fiber";
 import { OrbitControls, useAnimations, useGLTF, Environment } from "@react-three/drei";
 import { Suspense, useEffect, useRef, useState } from "react";
 import SFScene from "../assets/3d/scene.glb";
-import SFSceneMobile from "../assets/3d/sai.glb";  // Add the mobile version of the .glb file here
+import SFSceneMobile from "../assets/3d/sai.glb";  // Mobile version of the .glb file
 import CanvasLoader from "./Loader";
 
 const SF = ({ scale, position, isMobile }) => {
@@ -92,25 +92,27 @@ const SFCanvas = () => {
   }, []);
 
   return (
-    <Canvas
-      className="w-full h-screen bg-transparent z-10"
-      shadows
-      camera={{ position: [300, 175, -650], near: 0.1, far: 1000 }}
-    >
-      <Suspense fallback={<CanvasLoader />}>
-        <ambientLight intensity={0.5} />
-        <directionalLight position={[1, 2, 1]} intensity={1} />
-        <pointLight position={[-10, -10, 10]} intensity={1} />
-        <pointLight position={[10, 10, -10]} intensity={1} />
-        <spotLight position={[0, 50, 50]} angle={0.3} penumbra={1} intensity={1} />
-        <hemisphereLight skyColor="#b1e1ff" groundColor="#000000" intensity={0.5} />
+    <div style={{ height: '100vh', overflow: 'auto' }}> {/* This allows scrolling */}
+      <Canvas
+        className="w-full h-screen bg-transparent z-10"
+        shadows
+        camera={{ position: [300, 175, -650], near: 0.1, far: 1000 }}
+      >
+        <Suspense fallback={<CanvasLoader />}>
+          <ambientLight intensity={0.5} />
+          <directionalLight position={[1, 2, 1]} intensity={1} />
+          <pointLight position={[-10, -10, 10]} intensity={1} />
+          <pointLight position={[10, 10, -10]} intensity={1} />
+          <spotLight position={[0, 50, 50]} angle={0.3} penumbra={1} intensity={1} />
+          <hemisphereLight skyColor="#b1e1ff" groundColor="#000000" intensity={0.5} />
 
-        <SF scale={scale} position={position} isMobile={isMobile} /> {/* Pass isMobile prop to SF component */}
-        <OrbitControls enableZoom={false} enablePan={false} maxPolarAngle={Math.PI / 2} 
-          minPolarAngle={Math.PI / 2} autoRotate autoRotateSpeed={1} />
-        <Environment preset="night" />
-      </Suspense>
-    </Canvas>
+          <SF scale={scale} position={position} isMobile={isMobile} /> {/* Pass isMobile prop to SF component */}
+          <OrbitControls enableZoom={false} enablePan={false} maxPolarAngle={Math.PI / 2} 
+            minPolarAngle={Math.PI / 2} autoRotate autoRotateSpeed={1} />
+          <Environment preset="night" />
+        </Suspense>
+      </Canvas>
+    </div>
   );
 };
 
