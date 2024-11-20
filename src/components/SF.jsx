@@ -1,31 +1,30 @@
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, useAnimations, useGLTF, Environment } from "@react-three/drei";
 import { Suspense, useEffect, useRef, useState } from "react";
-import SFScene from "../assets/3d/scene-v1.glb"; // High-quality model
+import SFScene from "../assets/3d/scene-v1.glb"; // Default high-quality model
 import SceneMobile from "../assets/3d/sai.glb"; // Mobile-optimized model
 import CanvasLoader from "./Loader";
 
 const SF = ({ scale, position, glbFile }) => {
   const SFRef = useRef();
-  const { scene, animations } = useGLTF(glbFile); // Load model dynamically
+  const { scene, animations } = useGLTF(glbFile); // Dynamically load the .glb file
   const { actions } = useAnimations(animations, SFRef);
 
-  // Play the Idle animation if available
   useEffect(() => {
     if (actions["Idle"]) {
       actions["Idle"].play();
     }
   }, [actions]);
 
-  // Configure shadows and materials
   useEffect(() => {
     scene.traverse((child) => {
       if (child.isMesh) {
         child.castShadow = true;
         child.receiveShadow = true;
+        child.material.needsUpdate = true;
 
-        if (child.material) {
-          child.material.needsUpdate = true;
+        if (child.material.map) {
+          // Update texture maps if they exist
           if (child.material.map) child.material.map.needsUpdate = true;
           if (child.material.normalMap) child.material.normalMap.needsUpdate = true;
           if (child.material.roughnessMap) child.material.roughnessMap.needsUpdate = true;
@@ -73,7 +72,6 @@ const SFCanvas = () => {
       }
     };
 
-    // Adjust the model based on screen size
     handleResize();
     window.addEventListener("resize", handleResize);
 
@@ -89,7 +87,6 @@ const SFCanvas = () => {
       camera={{ position: [300, 175, -650], near: 0.1, far: 1000 }}
     >
       <Suspense fallback={<CanvasLoader />}>
-        {/* Lights */}
         <ambientLight intensity={0.5} />
         <directionalLight position={[1, 2, 1]} intensity={1} />
         <pointLight position={[-10, -10, 10]} intensity={1} />
@@ -97,11 +94,15 @@ const SFCanvas = () => {
         <spotLight position={[0, 50, 50]} angle={0.3} penumbra={1} intensity={1} />
         <hemisphereLight skyColor="#b1e1ff" groundColor="#000000" intensity={0.5} />
 
-        {/* 3D Model */}
         <SF scale={scale} position={position} glbFile={glbFile} />
-
-        {/* Controls and Environment */}
-        <OrbitControls enableZoom={false} enablePan={false} maxPolarAngle={Math.PI / 2} minPolarAngle={Math.PI / 2} autoRotate autoRotateSpeed={1} />
+        <OrbitControls
+          enableZoom={false}
+          enablePan={false}
+          maxPolarAngle={Math.PI / 2}
+          minPolarAngle={Math.PI / 2}
+          autoRotate
+          autoRotateSpeed={1}
+        />
         <Environment preset="night" />
       </Suspense>
     </Canvas>
