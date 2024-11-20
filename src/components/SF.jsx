@@ -1,7 +1,7 @@
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, useAnimations, useGLTF, Environment } from "@react-three/drei";
 import { Suspense, useEffect, useRef, useState, useMemo } from "react";
-import SFScene from "../assets/3d/scene.glb";
+import SFScene from "../assets/3d/scene-v1.glb";
 import CanvasLoader from "./Loader";
 
 const SF = ({ scale, position }) => {
