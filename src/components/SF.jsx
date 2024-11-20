@@ -1,13 +1,14 @@
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, useAnimations, useGLTF, Environment } from "@react-three/drei";
 import { Suspense, useEffect, useRef, useState } from "react";
-import SFScene from "../assets/3d/scene.glb"; // Default high-quality model
-import SceneMobile from "../assets/3d/sai.glb"; // Mobile-optimized model
+import SFScene from "../assets/3d/scene.glb";
+import SFSceneMobile from "../assets/3d/sai.glb";  // Add the mobile version of the .glb file here
 import CanvasLoader from "./Loader";
 
-const SF = ({ scale, position, glbFile }) => {
+const SF = ({ scale, position, isMobile }) => {
   const SFRef = useRef();
-  const { scene, animations } = useGLTF(glbFile); // Dynamically load the .glb file
+  const sceneFile = isMobile ? SFSceneMobile : SFScene;  // Conditionally select the .glb file
+  const { scene, animations } = useGLTF(sceneFile);
   const { actions } = useAnimations(animations, SFRef);
 
   useEffect(() => {
@@ -24,8 +25,7 @@ const SF = ({ scale, position, glbFile }) => {
         child.material.needsUpdate = true;
 
         if (child.material.map) {
-          // Update texture maps if they exist
-          if (child.material.map) child.material.map.needsUpdate = true;
+          child.material.map.needsUpdate = true;
           if (child.material.normalMap) child.material.normalMap.needsUpdate = true;
           if (child.material.roughnessMap) child.material.roughnessMap.needsUpdate = true;
           if (child.material.metalnessMap) child.material.metalnessMap.needsUpdate = true;
@@ -48,12 +48,24 @@ const SF = ({ scale, position, glbFile }) => {
 const SFCanvas = () => {
   const [scale, setScale] = useState([0.5, 0.5, 0.5]);
   const [position, setPosition] = useState([0, -1.5, 0]);
-  const [glbFile, setGlbFile] = useState(SFScene); // Default to high-quality model
+  const [isMobile, setIsMobile] = useState(false);  // Mobile state
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);  // Adjust the size as per your requirements
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+
+    return () => {
+      window.removeEventListener("resize", checkMobile);
+    };
+  }, []);
 
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth < 768) {
-        setGlbFile(SceneMobile); // Use mobile-optimized model
         setScale([0.2, 0.2, 0.2]);
         setPosition([0, -0.5, 0]);
       } else if (window.innerWidth < 1024) {
@@ -66,7 +78,6 @@ const SFCanvas = () => {
         setScale([0.45, 0.45, 0.45]);
         setPosition([0, -1.2, 0]);
       } else {
-        setGlbFile(SFScene); // Use high-quality model
         setScale([0.5, 0.5, 0.5]);
         setPosition([0, -1.5, 0]);
       }
@@ -94,15 +105,9 @@ const SFCanvas = () => {
         <spotLight position={[0, 50, 50]} angle={0.3} penumbra={1} intensity={1} />
         <hemisphereLight skyColor="#b1e1ff" groundColor="#000000" intensity={0.5} />
 
-        <SF scale={scale} position={position} glbFile={glbFile} />
-        <OrbitControls
-          enableZoom={false}
-          enablePan={false}
-          maxPolarAngle={Math.PI / 2}
-          minPolarAngle={Math.PI / 2}
-          autoRotate
-          autoRotateSpeed={1}
-        />
+        <SF scale={scale} position={position} isMobile={isMobile} /> {/* Pass isMobile prop to SF component */}
+        <OrbitControls enableZoom={false} enablePan={false} maxPolarAngle={Math.PI / 2} 
+          minPolarAngle={Math.PI / 2} autoRotate autoRotateSpeed={1} />
         <Environment preset="night" />
       </Suspense>
     </Canvas>
