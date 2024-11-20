@@ -1,14 +1,19 @@
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, Environment, useGLTF } from "@react-three/drei";
-import { Suspense, useEffect, useState } from "react";
+import { OrbitControls, useAnimations, useGLTF, Environment } from "@react-three/drei";
+import { Suspense, useEffect, useRef, useState } from "react";
+import SFScene from "../assets/3d/scene.glb";
 import CanvasLoader from "./Loader";
 
-// Function to detect if the device is mobile
-const isMobile = () => window.innerWidth <= 768;
+const SF = ({ scale, position }) => {
+  const SFRef = useRef();
+  const { scene, animations } = useGLTF(SFScene);
+  const { actions } = useAnimations(animations, SFRef);
 
-const SF = ({ scale, position, modelUrl }) => {
-  const { scene, animations } = useGLTF(modelUrl);
-  const [isModelLoaded, setIsModelLoaded] = useState(false);
+  useEffect(() => {
+    if (actions["Idle"]) {
+      actions["Idle"].play();
+    }
+  }, [actions]);
 
   useEffect(() => {
     scene.traverse((child) => {
@@ -19,23 +24,18 @@ const SF = ({ scale, position, modelUrl }) => {
 
         if (child.material.map) {
           child.material.map.needsUpdate = true;
-          if (child.material.normalMap) child.material.normalMap.needsUpdate = true;
-          if (child.material.roughnessMap) child.material.roughnessMap.needsUpdate = true;
-          if (child.material.metalnessMap) child.material.metalnessMap.needsUpdate = true;
+           // Update texture maps if they exist
+           if (child.material.normalMap) child.material.normalMap.needsUpdate = true;
+           if (child.material.roughnessMap) child.material.roughnessMap.needsUpdate = true;
+           if (child.material.metalnessMap) child.material.metalnessMap.needsUpdate = true;
         }
       }
     });
   }, [scene]);
 
-  // Set model loaded state when scene is available
-  useEffect(() => {
-    if (scene) {
-      setIsModelLoaded(true);
-    }
-  }, [scene]);
-
   return (
     <primitive
+      ref={SFRef}
       object={scene}
       position={position}
       scale={scale}
@@ -45,58 +45,58 @@ const SF = ({ scale, position, modelUrl }) => {
 };
 
 const SFCanvas = () => {
-  const [isMobileDevice, setIsMobileDevice] = useState(isMobile());
-  const [modelUrl, setModelUrl] = useState("");
+  const [scale, setScale] = useState([0.5, 0.5, 0.5]);
+  const [position, setPosition] = useState([0, -1.5, 0]);
 
-  // Update on resize
   useEffect(() => {
     const handleResize = () => {
-      setIsMobileDevice(isMobile());
+      if (window.innerWidth < 768) {
+        setScale([0.3, 0.3, 0.3]);  // Increased scale for better visibility on mobile
+        setPosition([0, -0.5, 0]);
+      } else if (window.innerWidth < 1024) {
+        setScale([0.4, 0.4, 0.4]);
+        setPosition([0, -0.7, 0]);
+      } else if (window.innerWidth < 1280) {
+        setScale([0.45, 0.45, 0.45]);
+        setPosition([0, -1, 0]);
+      } else if (window.innerWidth < 1536) {
+        setScale([0.5, 0.5, 0.5]);
+        setPosition([0, -1.2, 0]);
+      } else {
+        setScale([0.6, 0.6, 0.6]); // Slightly larger scale for desktop
+        setPosition([0, -1.5, 0]);
+      }
     };
 
+    handleResize();
     window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
 
-  // Dynamically import the .glb file only when needed
-  useEffect(() => {
-    const loadModel = async () => {
-      const modelPath = "./src/assets/3d/scene.glb"; // Replace with your actual model path
-      setModelUrl(modelPath);
+    return () => {
+      window.removeEventListener("resize", handleResize);
     };
-
-    loadModel();
   }, []);
 
   return (
     <Canvas
-      className="w-full h-screen bg-transparent z-10"
+      className="w-full h-full bg-transparent z-10" // Ensure it takes the full screen
       shadows
       camera={{ position: [300, 175, -650], near: 0.1, far: 1000 }}
     >
       <Suspense fallback={<CanvasLoader />}>
         <ambientLight intensity={0.5} />
-        {/* Only render complex lights on non-mobile devices */}
-        {!isMobileDevice && (
-          <>
-            <directionalLight position={[1, 2, 1]} intensity={1} />
-            <pointLight position={[-10, -10, 10]} intensity={1} />
-            <pointLight position={[10, 10, -10]} intensity={1} />
-            <spotLight position={[0, 50, 50]} angle={0.3} penumbra={1} intensity={1} />
-          </>
-        )}
+        <directionalLight position={[1, 2, 1]} intensity={1} />
+        <pointLight position={[-10, -10, 10]} intensity={1} />
+        <pointLight position={[10, 10, -10]} intensity={1} />
+        <spotLight position={[0, 50, 50]} angle={0.3} penumbra={1} intensity={1} />
         <hemisphereLight skyColor="#b1e1ff" groundColor="#000000" intensity={0.5} />
-        
-        {/* Render the SF component with lazy-loaded modelUrl */}
-        {modelUrl && <SF scale={[0.5, 0.5, 0.5]} position={[0, -1.5, 0]} modelUrl={modelUrl} />}
-
+        <SF scale={scale} position={position} />
         <OrbitControls 
           enableZoom={false} 
           enablePan={false} 
           maxPolarAngle={Math.PI / 2} 
           minPolarAngle={Math.PI / 2} 
           autoRotate 
-          autoRotateSpeed={isMobileDevice ? 0.5 : 1} 
+          autoRotateSpeed={1} 
         />
         <Environment preset="night" />
       </Suspense>
