@@ -1,30 +1,14 @@
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, useAnimations, useGLTF, Environment } from "@react-three/drei";
-import { Suspense, useEffect, useRef, useState } from "react";
-import SFScene from "../assets/3d/scene.glb";
+import { OrbitControls, Environment, useGLTF } from "@react-three/drei";
+import { Suspense, useEffect, useState } from "react";
 import CanvasLoader from "./Loader";
 
 // Function to detect if the device is mobile
 const isMobile = () => window.innerWidth <= 768;
 
-// Helper function to dynamically adjust the canvas size for mobile devices
-const getCanvasSize = () => {
-  if (window.innerWidth <= 768) {
-    return { width: window.innerWidth / 2, height: window.innerHeight / 2 };  // Reduce size for mobile
-  }
-  return { width: window.innerWidth, height: window.innerHeight };
-};
-
-const SF = ({ scale, position }) => {
-  const SFRef = useRef();
-  const { scene, animations } = useGLTF(SFScene);
-  const { actions } = useAnimations(animations, SFRef);
-
-  useEffect(() => {
-    if (actions["Idle"]) {
-      actions["Idle"].play();
-    }
-  }, [actions]);
+const SF = ({ scale, position, modelUrl }) => {
+  const { scene, animations } = useGLTF(modelUrl);
+  const [isModelLoaded, setIsModelLoaded] = useState(false);
 
   useEffect(() => {
     scene.traverse((child) => {
@@ -43,9 +27,15 @@ const SF = ({ scale, position }) => {
     });
   }, [scene]);
 
+  // Set model loaded state when scene is available
+  useEffect(() => {
+    if (scene) {
+      setIsModelLoaded(true);
+    }
+  }, [scene]);
+
   return (
     <primitive
-      ref={SFRef}
       object={scene}
       position={position}
       scale={scale}
@@ -56,6 +46,7 @@ const SF = ({ scale, position }) => {
 
 const SFCanvas = () => {
   const [isMobileDevice, setIsMobileDevice] = useState(isMobile());
+  const [modelUrl, setModelUrl] = useState("");
 
   // Update on resize
   useEffect(() => {
@@ -67,13 +58,21 @@ const SFCanvas = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Dynamically import the .glb file only when needed
+  useEffect(() => {
+    const loadModel = async () => {
+      const modelPath = "./src/assets/3d/scene.glb"; // Replace with your actual model path
+      setModelUrl(modelPath);
+    };
+
+    loadModel();
+  }, []);
+
   return (
     <Canvas
       className="w-full h-screen bg-transparent z-10"
       shadows
       camera={{ position: [300, 175, -650], near: 0.1, far: 1000 }}
-      width={getCanvasSize().width} // Dynamically adjust width for mobile
-      height={getCanvasSize().height} // Dynamically adjust height for mobile
     >
       <Suspense fallback={<CanvasLoader />}>
         <ambientLight intensity={0.5} />
@@ -87,14 +86,17 @@ const SFCanvas = () => {
           </>
         )}
         <hemisphereLight skyColor="#b1e1ff" groundColor="#000000" intensity={0.5} />
-        <SF scale={[0.5, 0.5, 0.5]} position={[0, -1.5, 0]} />
+        
+        {/* Render the SF component with lazy-loaded modelUrl */}
+        {modelUrl && <SF scale={[0.5, 0.5, 0.5]} position={[0, -1.5, 0]} modelUrl={modelUrl} />}
+
         <OrbitControls 
           enableZoom={false} 
           enablePan={false} 
           maxPolarAngle={Math.PI / 2} 
           minPolarAngle={Math.PI / 2} 
           autoRotate 
-          autoRotateSpeed={isMobileDevice ? 0.5 : 1} // Adjust rotation speed for mobile
+          autoRotateSpeed={isMobileDevice ? 0.5 : 1} 
         />
         <Environment preset="night" />
       </Suspense>
