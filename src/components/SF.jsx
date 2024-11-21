@@ -2,7 +2,7 @@ import { Canvas } from "@react-three/fiber";
 import { OrbitControls, useAnimations, useGLTF, Environment } from "@react-three/drei";
 import { Suspense, useEffect, useRef, useState } from "react";
 import SFScene from "../assets/3d/scene.glb";
-import SFSceneMobile from "../assets/3d/sai.glb"; // Add mobile version
+import SFSceneMobile from "../assets/3d/sai.glb"; // Mobile version
 import CanvasLoader from "./Loader";
 
 const SF = ({ scale, position, isMobile }) => {
@@ -92,12 +92,12 @@ const SFCanvas = () => {
   }, []);
 
   return (
-    <div style={{ width: "100%", overflowX: "auto", height: "100vh", display: "flex" }}>
+    <div style={{ width: "100%", overflowX: "auto", height: "100vh", display: "flex", flexDirection: "row" }}>
       <Canvas
         className="w-full h-full bg-transparent z-10"
         shadows
         camera={{ position: [300, 175, -650], near: 0.1, far: 1000 }}
-        style={{ minWidth: "100vw", minHeight: "100vh" }} // Ensure full width for scroll
+        style={{ minWidth: "100vw", minHeight: "100vh", flexGrow: 1 }} // Ensure full width for scroll
       >
         <Suspense fallback={<CanvasLoader />}>
           <ambientLight intensity={0.5} />
