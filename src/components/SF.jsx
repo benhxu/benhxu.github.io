@@ -1,14 +1,12 @@
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, useAnimations, useGLTF, Environment } from "@react-three/drei";
 import { Suspense, useEffect, useRef, useState } from "react";
-import SFScene from "../assets/3d/scene.glb";
-import SFSceneMobile from "../assets/3d/sai.glb";  // Add the mobile version of the .glb file here
+import SFScene from "../assets/3d/scene.glb";  // Keep scene.glb for optimized model
 import CanvasLoader from "./Loader";
 
-const SF = ({ scale, position, isMobile }) => {
+const SF = ({ scale, position }) => {
   const SFRef = useRef();
-  const sceneFile = isMobile ? SFSceneMobile : SFScene;  // Conditionally select the .glb file
-  const { scene, animations } = useGLTF(sceneFile);
+  const { scene, animations } = useGLTF(SFScene);  // Use only scene.glb
   const { actions } = useAnimations(animations, SFRef);
 
   useEffect(() => {
@@ -48,11 +46,11 @@ const SF = ({ scale, position, isMobile }) => {
 const SFCanvas = () => {
   const [scale, setScale] = useState([0.5, 0.5, 0.5]);
   const [position, setPosition] = useState([0, -1.5, 0]);
-  const [isMobile, setIsMobile] = useState(false);  // Mobile state
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);  // Adjust the size as per your requirements
+      setIsMobile(window.innerWidth < 768);
     };
 
     checkMobile();
@@ -105,7 +103,7 @@ const SFCanvas = () => {
         <spotLight position={[0, 50, 50]} angle={0.3} penumbra={1} intensity={1} />
         <hemisphereLight skyColor="#b1e1ff" groundColor="#000000" intensity={0.5} />
 
-        <SF scale={scale} position={position} isMobile={isMobile} /> {/* Pass isMobile prop to SF component */}
+        <SF scale={scale} position={position} /> {/* Remove isMobile prop */}
         <OrbitControls enableZoom={false} enablePan={false} maxPolarAngle={Math.PI / 2} 
           minPolarAngle={Math.PI / 2} autoRotate autoRotateSpeed={1} />
         <Environment preset="night" />
