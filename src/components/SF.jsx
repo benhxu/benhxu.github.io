@@ -2,12 +2,12 @@ import { Canvas } from "@react-three/fiber";
 import { OrbitControls, useAnimations, useGLTF, Environment } from "@react-three/drei";
 import { Suspense, useEffect, useRef, useState } from "react";
 import SFScene from "../assets/3d/scene.glb";
-import SFSceneMobile from "../assets/3d/sai.glb"; // Mobile version
+import SFSceneMobile from "../assets/3d/sai.glb";  // Add the mobile version of the .glb file here
 import CanvasLoader from "./Loader";
 
 const SF = ({ scale, position, isMobile }) => {
   const SFRef = useRef();
-  const sceneFile = isMobile ? SFSceneMobile : SFScene;
+  const sceneFile = isMobile ? SFSceneMobile : SFScene;  // Conditionally select the .glb file
   const { scene, animations } = useGLTF(sceneFile);
   const { actions } = useAnimations(animations, SFRef);
 
@@ -48,11 +48,11 @@ const SF = ({ scale, position, isMobile }) => {
 const SFCanvas = () => {
   const [scale, setScale] = useState([0.5, 0.5, 0.5]);
   const [position, setPosition] = useState([0, -1.5, 0]);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);  // Mobile state
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
+      setIsMobile(window.innerWidth < 768);  // Adjust the size as per your requirements
     };
 
     checkMobile();
@@ -92,27 +92,25 @@ const SFCanvas = () => {
   }, []);
 
   return (
-    <div style={{ width: "100%", overflowX: "auto", height: "100vh", display: "flex", flexDirection: "row" }}>
-      <Canvas
-        className="w-full h-full bg-transparent z-10"
-        shadows
-        camera={{ position: [300, 175, -650], near: 0.1, far: 1000 }}
-        style={{ minWidth: "100vw", minHeight: "100vh", flexGrow: 1 }} // Ensure full width for scroll
-      >
-        <Suspense fallback={<CanvasLoader />}>
-          <ambientLight intensity={0.5} />
-          <directionalLight position={[1, 2, 1]} intensity={1} />
-          <pointLight position={[-10, -10, 10]} intensity={1} />
-          <pointLight position={[10, 10, -10]} intensity={1} />
-          <spotLight position={[0, 50, 50]} angle={0.3} penumbra={1} intensity={1} />
-          <hemisphereLight skyColor="#b1e1ff" groundColor="#000000" intensity={0.5} />
-          
-          <SF scale={scale} position={position} isMobile={isMobile} />
-          <OrbitControls enableZoom={false} enablePan={false} maxPolarAngle={Math.PI / 2} minPolarAngle={Math.PI / 2} autoRotate autoRotateSpeed={1} />
-          <Environment preset="night" />
-        </Suspense>
-      </Canvas>
-    </div>
+    <Canvas
+      className="w-full h-screen bg-transparent z-10"
+      shadows
+      camera={{ position: [300, 175, -650], near: 0.1, far: 1000 }}
+    >
+      <Suspense fallback={<CanvasLoader />}>
+        <ambientLight intensity={0.5} />
+        <directionalLight position={[1, 2, 1]} intensity={1} />
+        <pointLight position={[-10, -10, 10]} intensity={1} />
+        <pointLight position={[10, 10, -10]} intensity={1} />
+        <spotLight position={[0, 50, 50]} angle={0.3} penumbra={1} intensity={1} />
+        <hemisphereLight skyColor="#b1e1ff" groundColor="#000000" intensity={0.5} />
+
+        <SF scale={scale} position={position} isMobile={isMobile} /> {/* Pass isMobile prop to SF component */}
+        <OrbitControls enableZoom={false} enablePan={false} maxPolarAngle={Math.PI / 2} 
+          minPolarAngle={Math.PI / 2} autoRotate autoRotateSpeed={1} />
+        <Environment preset="night" />
+      </Suspense>
+    </Canvas>
   );
 };
 
