@@ -32,7 +32,7 @@ const produceSpans = (text: string, animation: string) => {
   
           {/* Enlarged Paragraphs */}
           <p className="text-xl">
-            One of my passions is to use technology to improve the quality of life for others. <br />
+            One of my passion is to use technology to improve the quality of life for others. <br />
             Specializing in web development, data visualization, and analytics, and creating engaging user experiences.
           </p>
           <p className="text-xl">Let's build something amazing together.</p>
